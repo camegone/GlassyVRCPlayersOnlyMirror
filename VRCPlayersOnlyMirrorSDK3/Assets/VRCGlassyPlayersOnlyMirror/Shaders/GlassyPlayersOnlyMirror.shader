@@ -1,32 +1,46 @@
-﻿Shader "Mirror/VRCPlayersOnlyMirror"
+﻿Shader "Mirror/VRCGlassyPlayersOnlyMirror"
 {
     Properties
     { 
         _MainTex("Base (RGB)", 2D) = "white" {}
         [HideInInspector] _ReflectionTex0("", 2D) = "white" {}
         [HideInInspector] _ReflectionTex1("", 2D) = "white" {}
-        [ToggleUI(HideBackground)] _HideBackground("Hide Background", Float) = 0
-        [ToggleUI(IgnoreEffects)] _IgnoreEffects("Ignore Effects", Float) = 0
+        [Toggle] _HideBackground("Hide Background", Float) = 0
+        [Toggle] _IgnoreEffects("Ignore Effects", Float) = 0
+        [Toggle] _CutOut("CutOut Mode", Float) = 0
         _Transparency("Transparency", Range(0, 1)) = 1
+
+        [Header(NonCutOut OnlySettings)]
         _TransparencyTex("Transparency Mask", 2D) = "white" {}
         _DistanceFade("Distance Fade", Range(0,20)) = 0
         _DistanceFadeLength("Distance Fade Length", Range(0,10)) = 1
-        [ToggleUI(SmoothEdge)] _SmoothEdge("Smooth Edge", Float) = 1
+        [Toggle] _SmoothEdge("Smooth Edge", Float) = 1
         _AlphaTweakLevel("Alpha Tweak Level", Range(0,1)) = 0.75
         //Stencils
-        [Space(50)] _Stencil ("Stencil ID", Float) = 0
+        [Header(Stencil Settings)]
+        _Stencil ("Stencil ID", Float) = 0
         [Enum(UnityEngine.Rendering.CompareFunction)] _StencilCompareAction ("Stencil Compare Function", int) = 0
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilOp ("Stencil Pass Operation", int) = 0
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilFail ("Stencil Fail Operation", int) = 0
         [Enum(UnityEngine.Rendering.StencilOp)] _StencilZFail ("Stencil ZFail Operation", int) = 0
         _StencilWriteMask ("Stencil Write Mask", Float) = 255
         _StencilReadMask ("Stencil Read Mask", Float) = 255
+        //BlendMode
+    
+        [Header(RenderingTweak)]
+        [ToggleUI] _ZWrite("Z Write", Float) = 0
+        [Enum(UnityEngine.Rendering.BlendMode)] _SrcFactor("SrcFactor", Float) = 0
+        [Enum(UnityEngine.Rendering.BlendMode)] _DstFactor("DstFactor", Float) = 0
+        [Toggle] _PreMult("Pre-Multiply Alpha", Float) = 0
+        [Enum(UnityEngine.Rendering.BlendOp)] _BlendOp("BlendOp", Float) = 0
     }
     SubShader
     {
         Tags{ "RenderType"="Transparent" "Queue"="Transparent+1" "IgnoreProjector"="True"}
-        ZWrite Off
-        Blend SrcAlpha OneMinusSrcAlpha
+        ZWrite [_ZWrite]
+        BlendOp [_BlendOp], Add
+        AlphaToMask Off//[_CutOut]
+        Blend [_SrcFactor] [_DstFactor], One One
         LOD 100
 
         Stencil
@@ -49,14 +63,17 @@
             #include "UnityCG.cginc"
             #include "UnityInstancing.cginc"
 
+            #pragma multi_compile_local _ _SMOOTHEDGE_ON
+            #pragma multi_compile_local _ _HIDEBACKGROUND_ON
+            #pragma multi_compile_local _ _IGNOREEFFECTS_ON
+            #pragma multi_compile_local _ _PREMULT_ON
+            #pragma multi_compile_local _ _CUTOUT_ON
+
             sampler2D _MainTex;
             float4 _MainTex_ST;
-            float _HideBackground;
-            float _IgnoreEffects;
             float _Transparency;
             float _DistanceFade;
             float _DistanceFadeLength;
-            float _SmoothEdge;
             float _AlphaTweakLevel;
 
             sampler2D _ReflectionTex0;
@@ -110,30 +127,52 @@
                 half4 refl = unity_StereoEyeIndex == 0 ? tex2Dproj(_ReflectionTex0, UNITY_PROJ_COORD(i.refl)) : tex2Dproj(_ReflectionTex1, UNITY_PROJ_COORD(i.refl));
 
                 // Hiding background
-                if (_HideBackground) {
-                    half power = dot(refl.rgb, fixed3(1,1,1)) / 3;
-                    bool applyIgnoreEffects = ! _IgnoreEffects && power > 0.01;
-                    if (_SmoothEdge)
-                    {
-                        refl.a = refl.a > 0 ? refl.a : 
-                                        applyIgnoreEffects ? power : 0;
-                        refl.a = smoothstep(0, _AlphaTweakLevel, refl.a);
-                    } else {
-                        refl.a = refl.a > 0 ? 1 : 
-                                        applyIgnoreEffects ? 1 : 0;
-                    }
-                } else {
+                #ifdef _HIDEBACKGROUND_ON
+                    #ifndef _IGNOREEFFECTS_ON
+                        half power = dot(refl.rgb, fixed3(1,1,1)) / 3;
+                        bool applyIgnoreEffects = power > 0.01;
+                    #endif
+                    
+                    #ifdef _CUTOUT_ON
+                        #ifndef _IGNOREEFFECTS_ON
+                            refl.a = refl.a > 0 ? 1 : (applyIgnoreEffects ? 1 : 0);
+                        #else
+                        refl.a = refl.a > 0 ? 1 : 0;
+                        #endif
+                        clip(refl.a);
+                    #else
+                        #ifdef _SMOOTHEDGE_ON
+                            #ifndef _IGNOREEFFECTS_ON
+                                refl.a = refl.a > 0 ? refl.a : (applyIgnoreEffects ? power : 0);
+                            #else
+                                refl.a = refl.a > 0 ? refl.a : 0;
+                            #endif
+                            refl.a = smoothstep(0, _AlphaTweakLevel, refl.a);
+                        #else
+                            #ifndef _IGNOREEFFECTS_ON
+                                refl.a = refl.a > 0 ? 1 : (applyIgnoreEffects ? 1 : 0);
+                            #else
+                                refl.a = refl.a > 0 ? 1 : 0;
+                            #endif
+                        #endif
+                    #endif
+                #else
                     refl.a = 1;
-                }
+                #endif
 
-                // distance fade
-                if (_DistanceFade > 0) {
-                    refl.a *= 1 - smoothstep(_DistanceFade, _DistanceFade + _DistanceFadeLength, distance(i.distance, mul(unity_WorldToObject, float4(_WorldSpaceCameraPos, 1.0))));
-                }
-
-                refl *= tex;             
-                refl.a *= dot(trans.rgb, fixed3(1,1,1)) / 3; // render texture transparency override 
-                refl.a *= (1 - _Transparency); // slider transparency
+                #ifndef _CUTOUT_ON
+                    // distance fade
+                    if (_DistanceFade > 0) {
+                        refl.a *= 1 - smoothstep(_DistanceFade, _DistanceFade + _DistanceFadeLength, distance(i.distance, mul(unity_WorldToObject, float4(_WorldSpaceCameraPos, 1.0))));
+                    }
+                #endif
+                refl *= tex;
+                
+                    refl.a *= dot(trans.rgb, fixed3(1,1,1)) / 3; // render texture transparency override 
+                    refl.a *= (1 - _Transparency); // slider transparency
+                    #ifdef _PREMULT_ON
+                        refl.rgb *= refl.a; //pre-multiply alpha
+                    #endif
                 return refl;
             }
 
