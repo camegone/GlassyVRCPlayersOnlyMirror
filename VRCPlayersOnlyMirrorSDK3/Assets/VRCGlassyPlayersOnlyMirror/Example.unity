@@ -121,6 +121,12 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &15481297 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 7919568069422622485, guid: 62a489e434e57914ea7b863ae9fac136,
+    type: 3}
+  m_PrefabInstance: {fileID: 6674104221611655745}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &118995567
 GameObject:
   m_ObjectHideFlags: 0
@@ -6898,8 +6904,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   launchedFromSDKPipeline: 0
-  completedSDKPipeline: 1
-  blueprintId: wrld_d957a94c-7876-4eb3-afbe-0b1e563f4d4e
+  completedSDKPipeline: 0
+  blueprintId: 
   contentType: 1
   assetBundleUnityVersion: 
   fallbackStatus: 0
@@ -7073,7 +7079,6 @@ MonoBehaviour:
   - {fileID: 2100000, guid: a07fd6925dca694449c7339b498f2356, type: 2}
   - {fileID: 2100000, guid: bdc6f8d378ed7b34e970300b85b03820, type: 2}
   - {fileID: 10308, guid: 0000000000000000f000000000000000, type: 0}
-  - {fileID: 2100000, guid: 0d7e4f31f598d6c428e4b2d81f26dccc, type: 2}
   - {fileID: 10303, guid: 0000000000000000f000000000000000, type: 0}
   - {fileID: 2100000, guid: 53f985bc620c0684f8e020f565fb2eb2, type: 2}
   LightMapsNear: []
@@ -7135,5 +7140,7 @@ MonoBehaviour:
     ID: 11
   - gameObject: {fileID: 2708512294321953642}
     ID: 12
+  - gameObject: {fileID: 15481297}
+    ID: 13
   portraitCameraPositionOffset: {x: 0, y: 0, z: 0}
   portraitCameraRotationOffset: {x: 0, y: 1, z: 0, w: -0.00000004371139}
