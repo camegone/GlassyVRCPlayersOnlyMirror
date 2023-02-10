@@ -1,4 +1,5 @@
-#GlassyMirror
+# GlassyMirror
+  - Use PlayerOnlyMirror as if it is a reflection on a smooth surface.
 # v0.1.4+ for VRCSDK3-WORLD-2022.08.29.20.48_Public
 
   - Removes requirement of "TransparentBackground" mask, as VRCMirror now supports custom camera clear flags
@@ -22,6 +23,7 @@ This is NOT a 2D camera cut out, it is a full 3D mirror.
 # Requirements
   - VRChat SDK3
   - **!!! SDK3 VRCSDK3-WORLD-2022.08.29.20.48_Public or newer for v0.1.4 !!!**
+  - Unity 2019 or later (This shader use **local** shader keywords.)
 
 # How to
 
@@ -33,6 +35,7 @@ This is NOT a 2D camera cut out, it is a full 3D mirror.
   - **PlayersOnlyMirror** - Regular version with transparency and distance fade
   - **PlayersOnlyMirrorCutout** - Variant with just cutout, no transparency or distance fade.
   - **GlassyPlayersOnlyMirror** - Moddification of the regular one. It blend reflections and the background like a shiney glass. (technically speaking, it blends them by BlendOp Max.)
+  - **SoftAddPlayersOnlyMirror** - a little mutation of Glassy one. This is more visible, but less realistic. (UsesSoftAdd blending.)
 
 # Shader Settings
 
@@ -47,12 +50,11 @@ This is NOT a 2D camera cut out, it is a full 3D mirror.
   - **Distance Fade Length** - The length of distance traveled needed to fade to zero alpha.
   - **Smooth Edge** - Make edge smoother and avoid transparent object will be rendered opaque.
   - **Alpha Tweak Level** - Adjust smooth edge power.
-  -
   
- #Work in progress issues
+  - RenderingTweaks are provided for Users who know about blending.
+  
+ # Work in progress issues
   - After Switching platform, rendering may go wrong.
-  - I tried to combine normal one, cutout and glassy variant into one shader.
-  -
   
-Credits appreciated but not required.
--
+ Credits appreciated but not required.
+
