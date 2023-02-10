@@ -1,5 +1,6 @@
 # GlassyMirror
   - Use PlayerOnlyMirror as if it is a reflection on a smooth surface.
+  - Demo World: https://vrch.at/7mc2xvc5
 # v0.1.4+ for VRCSDK3-WORLD-2022.08.29.20.48_Public
 
   - Removes requirement of "TransparentBackground" mask, as VRCMirror now supports custom camera clear flags
